@@ -8,17 +8,9 @@ Param(
 #импортируем модуль управления сессиями в терминалах
 Import-Module C:\scripts\PSTerminalServices
 #Делаем правильный вывод на экран пользователям
-if($delay -eq 1){
-    $delay_text = $delay.ToString() + " минуту"
-}else{
-    if($delay -lt 5){
-        $delay_text = $delay.ToString() + " минуты"
-    }else{
-        $delay_text = $delay.ToString() + " минут"
-    }
-}
+$time = (get-date).AddMinutes($delay)
 #Сообщение для пользователей
-$message = "Сервер 1С будет перегружен через " + $delay_text
+$message =  "Сервер 1с будет перегружен в " + ($time).ToString('HH:mm')
 #переводим в секунды
 $delay *= 60
 #Список серверов
