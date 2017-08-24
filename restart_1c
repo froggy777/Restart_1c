@@ -1,0 +1,39 @@
+Param(
+[Int32]$delay = $( Read-Host "Введите сколько минут необходимо подождать до перезагрузки" ),
+[Parameter (Mandatory=$false)]
+[string]$server_1c = "db.domain.local",
+[Parameter (Mandatory=$false)]
+[switch]$restart_1c = $false
+)
+#импортируем модуль управления сессиями в терминалах
+Import-Module C:\scripts\PSTerminalServices
+#Делаем правильный вывод на экран пользователям
+if($delay -eq 1){
+    $delay_text = $delay.ToString() + " минуту"
+}else{
+    if($delay -lt 5){
+        $delay_text = $delay.ToString() + " минуты"
+    }else{
+        $delay_text = $delay.ToString() + " минут"
+    }
+}
+#Сообщение для пользователей
+$message = "Сервер 1С будет перегружен через " + $delay_text
+#переводим в секунды
+$delay *= 60
+#Список серверов
+$servers = @("ts1.domain.local", "ts2.domain.local")
+#Для каждого сервера отдельно идёт цикл
+foreach ($server in $servers)
+{
+    Write-Host "On SERVER  " $server " message was delivered to users."
+    #для пользователей на серверах выводим сообщение. Условие должно быть where  {$_.username -ne ""}
+    get-tssession -computername $server | where  {$_.username -ne ""}  | Send-TSMessage -Text $message
+}
+#Выполняем скрипт с ребутом на удалённом сервере
+#На удалённом сервере есть заранее подготовленный скрипт для рестарта 1С и чистки кешей \\$server_1c E:\scripts\restart_SQL_clear.bat
+if ($restart_1c){
+    #Ждём $delay секунд, перед ребутом
+    ping -n $delay localhost >> $NULL
+    psexec \\$server_1c E:\scripts\restart_SQL_clear.bat
+}
